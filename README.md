@@ -12,6 +12,14 @@ Titanic example is the first project that every data enthusiast starts with. The
 
 # Data
 ## Interpreting existing data
+
+## Age and Sex
+### Females
+
+
+
+### Males
+
 ## Data Cleaning
 ## New Attributes
 
