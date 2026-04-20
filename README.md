@@ -1,134 +1,152 @@
-# Titanic
-## Author: Nishant Nayar
+# Titanic — Explainable AI Project
+**Author: Nishant Nayar**
 
-# RMS Titanic
-**RMS Titanic** was a British passenger liner, operated by the White Star Line, which sank in the North Atlantic Ocean on 15 April 1912 after striking an iceberg during her maiden voyage from Southampton, UK, to New York City. Of the estimated 2,224 passengers and crew aboard, more than 1,500 died, which made the sinking possibly one of the deadliest for a single ship up to that time.[a] It remains to this day the deadliest peacetime sinking of a superliner or cruise ship. The disaster drew much public attention, provided foundational material for the disaster film genre, and has inspired many artistic works. 
+> "The model predicted you would not survive. I asked it what would have changed that."
 
-*source*: [Wikipedia](https://en.wikipedia.org/wiki/Titanic)
+---
 
-## Background
+## What This Project Does
 
-Titanic example is the first project that every data enthusiast starts with. There are many articles and topics that talk about the underlying statistics and data science concepts. This is an effort to make this project understandable for all those who are not versed in statistics and concepts of data science. The emphasis here is to make the machine learning models explainable to all.
+Most Titanic analyses stop at feature importance — which variables mattered most across all passengers. This project goes one level deeper: **why did the model make this specific decision, and what would have changed it?**
 
-# Data
-Let's first explore the data set that hase been shared with us.
+That second question is called a **counterfactual explanation**. It is the same reasoning regulators require when a bank rejects a credit application. The Titanic dataset makes it emotionally accessible. The methodology transfers directly to financial services.
 
-## Age and Sex
-Certain age groups have better chances of survival. In this section we will explore the age groups that have better chances of survival over others
+**Try it:** Run `streamlit run app.py` and enter your 1912 passenger profile.
 
-### Females
-Females between the ages of 14 - 35 have better chances of survival.
-![Females](https://github.com/nishantnayar/Titanic/blob/main/img/FemaleSurvival.png?raw=true)
+---
 
-### Males
-Infants and males between ages 25-35 have better chances of survival.
-![Males](https://github.com/nishantnayar/Titanic/blob/main/img/MaleSurvival.png?raw=true)
+## The App
 
-### Port of Embarkation
+Five tabs:
 
-Males and Females who embarked from port of Cherbourg have better chances of survival
-![Port](https://github.com/nishantnayar/Titanic/blob/main/img/Embarkation.png?raw=true)
+| Tab | What it shows |
+|---|---|
+| Your Prediction | Survival probability gauge for your custom passenger profile |
+| Why the Model Decided This | SHAP waterfall — each feature's push toward or away from survival |
+| What Would Have Changed It | Counterfactual scenarios — nearest passengers the model predicted differently |
+| 5 Real Passengers | Five archetypes from the actual dataset with full SHAP and counterfactual explanations |
+| About | Methodology and connection to financial services XAI |
 
+---
 
-### Ticket Class
-Passengers with the first class ticket have better chances of survival
+## Project Structure
 
-![Ticket Class](https://github.com/nishantnayar/Titanic/blob/main/img/Sex-Ticket.png?raw=true)
+```
+Titanic/
+├── data/
+│   ├── Titanic-Dataset.csv       # original 891-row dataset
+│   ├── train.csv                 # 712 rows — stratified 80/20 split
+│   ├── test.csv                  # 179 rows
+│   └── stories_summary.csv       # 5 archetype narratives
+├── src/
+│   ├── features.py               # feature engineering pipeline
+│   ├── model.py                  # model training and saving
+│   ├── explain.py                # SHAP + counterfactual logic
+│   └── stories.py                # 5 real passenger archetypes
+├── models/                       # saved model artifacts
+├── img/                          # SHAP plots
+├── app.py                        # Streamlit application
+├── requirements.txt
+├── PLAN.md                       # project roadmap
+└── Titanic.ipynb                 # exploratory analysis notebook
+```
 
-### Relatives
-The dataset already contains number of siblings / spouses as well as number of parents / children aboard the Titanic. We will add the two data points to identify the number of relatives on board the titanic. And identify the impact of number of relatives have on the chances of survival.
+---
 
-Additionally we will create a _new attribute "Not Alone"_ based on the the number of relatives calculated
+## Setup
 
-![Relatives](https://github.com/nishantnayar/Titanic/blob/main/img/Relatives.png?raw=true)
+**Using the conda environment (recommended):**
 
-## Data Cleaning
+```bash
+conda activate titanic
+pip install -r requirements.txt
+```
 
-A quick glance at the Test and Train data given in tables below we observe only three attributes have missing values
+**Run the app:**
 
-* Cabin
-* Age
-* Port of Embarkation
+```bash
+conda activate titanic
+streamlit run app.py
+```
 
-**Test Data**
+**Retrain the model:**
 
-![TestData](https://github.com/nishantnayar/Titanic/blob/main/img/train_data.png?raw=true)
+```bash
+python -m src.model data/train.csv data/test.csv
+```
 
-**Train Data**
+---
 
-![TrainData](https://github.com/nishantnayar/Titanic/blob/main/img/test_data.png?raw=true)
+## Methodology
 
-### Calculating missing values
+### Model
 
-* **Cabin**: Cabin data starts with an alphabet denoting the deck number where the cabins are located. We will extract the first alphabet and create a new attribute called as **deck**. The alphabet will be assiged a numeric value for ease of model building. The mising values will be assigned a value of 0. Cabin column will be subsequently dropped.
-* **Age**: We will randomly assign a non-zero age value between the mean and standard deviation of the existing age values.
-* **Embarked**: Since there are only two values missing we will assume them they also embarked from Southampton 'S' as most of the passengers embarked from that port.
+Random Forest Classifier — selected over XGBoost based on held-out test performance.
 
-### Dropping columns
+| Metric | Score |
+|---|---|
+| Accuracy | 80.4% |
+| F1 (weighted) | 80.1% |
+| Train / Test split | 80 / 20 stratified |
 
-* **Cabin**: Since we have extracted the deck the value, we can drop this column.
-* **Ticket**: There are 681 unique values and difficult to convert into categories.
+### Feature Engineering
 
-### Converting columns
+| Feature | Approach |
+|---|---|
+| Deck | Extracted from Cabin letter, mapped to numeric |
+| Title | Extracted from Name, rare titles grouped |
+| Age | Binned into 7 groups |
+| Fare | Binned into 6 groups |
+| relatives | SibSp + Parch |
+| not_alone | 1 if travelling alone |
+| Age_Class | Age bin × Pclass interaction |
+| Fare_Per_Person | Fare / (relatives + 1) |
+| Sex, Embarked | Label encoded |
 
-For machine learning models to work properly we have to convert each of the attributes into numercial values.
+Missing values: Age imputed with random draw within mean ± std. Embarked filled with Southampton (most common). Cabin missing mapped to Unknown deck.
 
-* **Fare**: The attribute is a float value with decimal points and will be converted to integer that will round it off to a whole number.
-* **Name**: There are common titles and some rare titles, we will extract title into a separate column, convert rare titles and assign them a numeric value based on table below
+### Explainability — SHAP
 
-|Existing Title|Equivalent Title| Assigned Numeric value|
-|---:|:---|:---|
-|Mr|Mr|1|
-|Miss, Mlle, Ms,|Miss|2|
-|Mrs, Mme|Mrs|3|
-|Master|Master|4|
-|Lady, Countess, Capt, Col,Don, Dr, Major, Rev, Sir, Jonkheer, Dona|Rare|5|
+SHAP TreeExplainer generates both global (summary) and local (per-passenger waterfall) feature attributions. Each bar on the waterfall shows one feature pushing the survival probability up or down from the model's baseline.
 
-* **Sex** : The following conversion will be applied
+### Counterfactuals
 
-|Sex|Assigned numeric Value|
-|---:|:---|
-|Male|0|
-|Female|1|
+Nearest-neighbour search across training examples predicted in the opposite class. Diversity filtering ensures the three scenarios shown are meaningfully different from each other. This approach is guaranteed to find results and runs in milliseconds — no generative model required.
 
-* **Age**: The age will be grouped based on table below
+---
 
-|Age Range|Assigned numeric value|
-|---:|:---|
-|<= 11 |0|
-|>11 and <=18|1|
-|>18 and <=22|2|
-|>22 and <=27|3|
-|>27 and <=33|4|
-|>33 and <=40|5|
-|>40 and <=66|6|
-|>66|7|
+## Five Passenger Archetypes
 
-* **Fare**: Fare amount will be grouped based on table below.
+| Passenger | Profile | Outcome | Model |
+|---|---|---|---|
+| Leah Rosen (Mrs. Sam Aks) | 18yo woman, 3rd class, travelling with infant | Survived | 55% — correct |
+| Johannes Halvorsen Kalvik | 21yo man, 3rd class, travelling alone | Did not survive | 10% — correct |
+| Mr. John Montgomery Smart | 56yo man, 1st class, travelling alone | Did not survive | 18% — correct |
+| Miss. Albina Bazzani | 32yo woman, 1st class, travelling alone | Survived | 95% — correct |
+| Mrs. Margaret Ford | 48yo woman, 3rd class, 4 family members | Did not survive | 30% — correct |
 
-|Fare Amount|Assigned numeric value|
-|---:|:---|
-|<= 7.91 |0|
-|> 7.91 and <= 14.454|1|
-|> 14.454 and <= 31)|2|
-|> 31 and <= 99|3|
-|> 99 and <= 250|4|
-|> 250|5|
+---
 
-## New Attributes
-We will create two more additional attributes
+## Connection to Financial Services
 
-* **Age times Class**: It was observed initially that both the age and ticket class have an impact on the survivability. 
-* **Fare per Person**: Similarly we also observed the number of relatives have an impact on survivability. The fare amount is very varied, the assumption here being head of family paid for the trip of all the relatives.
+The SHAP + counterfactual pattern used here is the same one banks need to deploy under model explainability regulations. A credit rejection system must be able to answer: "What would this applicant need to change to receive a different outcome?"
 
+This project is Phase 0 of a portfolio demonstrating that capability. The next project applies identical methodology to a credit risk dataset.
 
+---
 
-# Model Generation
+## Background — The RMS Titanic
 
-## Model Comparison
+RMS Titanic was a British passenger liner operated by the White Star Line. It sank on 15 April 1912 after striking an iceberg during its maiden voyage from Southampton to New York City. Of the estimated 2,224 passengers and crew aboard, more than 1,500 died.
 
-## Hyperparameter tuning
-### Grid Search
-### Optuna
+*Source: [Wikipedia](https://en.wikipedia.org/wiki/Titanic)*
 
-# Model Interpretation
+---
+
+## Author
+
+**Nishant Nayar** — Techno-functional leader at the intersection of Data Science, Technology, and Business.
+
+MS Analytics, University of Chicago · MBA Finance, Punjabi University
+
+[LinkedIn](https://linkedin.com/in/nishantnayar) · [Portfolio](https://nishantnayar.vercel.app)
