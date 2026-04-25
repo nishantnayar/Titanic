@@ -572,15 +572,28 @@ with tab_compliance:
         st.divider()
         st.markdown("#### The price of playing by the rules")
         st.markdown(
-            "Without any legal constraints, an AI can flip your outcome by changing *anything* — "
-            "even your age or gender. Once regulation steps in, those shortcuts are off-limits. "
-            "The table below shows how many **extra profile changes** each method needs to make "
-            "once it has to follow the selected framework's rules."
+            "Imagine the AI is advising you on how to have survived: "
+            "*'Change your ticket class and your deck.'* Simple enough.\n\n"
+            "But what if the law says it **cannot** tell you to change your age or gender — "
+            "because those are things you were born with? "
+            "Now the AI has to find a longer route. It might need to suggest *three or four* "
+            "changes instead of one.\n\n"
+            "**That extra effort is the compliance cost.** "
+            "The table below counts how many more profile changes each method requires "
+            "once the selected regulation's rules kick in."
         )
-        st.caption(
-            "Technical: Unconstrained = no immutability or plausibility constraints (research baseline). "
-            "Compliance cost (delta) = extra feature changes required under the selected framework vs. baseline. "
-            "A delta of +2 means the method must change 2 additional features to find a valid explanation."
+#        st.caption(
+#            "Technical: Unconstrained = no immutability or plausibility constraints (research baseline). "
+#           "Compliance cost (delta) = additional feature changes required under the selected framework. "
+#            "A delta of +2 means the method must change 2 more features to find a legally valid explanation."
+#        )
+        st.markdown(
+            "- **Unconstrained** = no immutability or plausibility constraints "
+            "(research baseline).\n"
+            "- **Compliance cost (delta)** = extra feature changes required "
+            "under the selected framework vs. the baseline.\n"
+            "- A delta of **+2** means the method must change 2 additional "
+            "features to find a valid explanation."
         )
 
         if cost_key not in st.session_state:
@@ -625,9 +638,10 @@ with tab_compliance:
         cost_df = pd.DataFrame(st.session_state[cost_key])
         st.dataframe(cost_df, use_container_width=True, hide_index=True)
         st.caption(
-            "A delta of 0 means the method found a valid explanation without needing to use any "
-            "legally restricted features. A positive delta means regulation forced it to find a "
-            "longer, harder path. Methods with '—' could not find any compliant explanation at all."
+            "How to read this: "
+            "**0** = the method didn't need any restricted shortcuts — it found a fair path naturally. "
+            "**+1, +2…** = regulation forced it to work harder and suggest more changes. "
+            "**—** = the method couldn't find any compliant explanation at all under this framework."
         )
 
         # ------ Regulatory narrative ------
