@@ -119,7 +119,7 @@ def build_story(archetype: dict, model, scaler, stats, X_train,
     shap_waterfall_plot(explainer, X_scaled,
                         passenger_label=archetype['name'],
                         save=False)
-    plt.savefig(waterfall_path, dpi=150, bbox_inches='tight')
+    plt.savefig(waterfall_path, dpi=150, bbox_inches='tight', transparent=True)
     plt.close()
 
     # SHAP narrative

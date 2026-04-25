@@ -49,7 +49,7 @@ def engineer_features(df: pd.DataFrame, train_age_mean: float = None, train_age_
     df['Fare'] = df['Fare'].fillna(0).astype(int)
 
     # Title
-    df['Title'] = df['Name'].str.extract(' ([A-Za-z]+)\.', expand=False)
+    df['Title'] = df['Name'].str.extract(r' ([A-Za-z]+)\.', expand=False)
     df['Title'] = df['Title'].replace(RARE_TITLES, 'Rare')
     df['Title'] = df['Title'].replace({'Mlle': 'Miss', 'Ms': 'Miss', 'Mme': 'Mrs'})
     df['Title'] = df['Title'].map(TITLE_MAP).fillna(0)

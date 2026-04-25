@@ -6,3 +6,7 @@ pandas==2.2.2
 numpy==1.26.4
 matplotlib==3.8.2
 joblib==1.5.1
+plotly>=5.20.0
+dice-ml>=0.12
+NICEx                  # install with: pip install NICEx --no-deps
+oceanpy                # install with: pip install oceanpy

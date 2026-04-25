@@ -39,16 +39,25 @@ def shap_summary_plot(explainer, X_train: np.ndarray, save: bool = True):
     shap_values = explainer.shap_values(X_train)
 
     # For binary classifiers shap_values is a list; take class 1
-    vals = shap_values[1] if isinstance(shap_values, list) else shap_values
+    if isinstance(shap_values, list):
+        vals = shap_values[1]
+    elif hasattr(shap_values, 'ndim') and shap_values.ndim == 3:
+        vals = shap_values[:, :, 1]
+    else:
+        vals = shap_values
 
     fig, ax = plt.subplots(figsize=(10, 7))
-    shap.summary_plot(vals, X_train, feature_names=labels, show=False)
+    shap.summary_plot(vals, X_train, feature_names=labels,
+                      max_display=len(labels), plot_type="dot", show=False)
     plt.title("Feature Impact on Survival Prediction", fontsize=14, pad=12)
+    fig.patch.set_alpha(0)
+    for _ax in fig.axes:
+        _ax.set_facecolor("none")
     plt.tight_layout()
 
     if save:
         path = IMG_DIR / "shap_summary.png"
-        plt.savefig(path, dpi=150, bbox_inches='tight')
+        plt.savefig(path, dpi=150, bbox_inches='tight', transparent=True)
         print(f"Saved: {path}")
 
     return fig
@@ -65,15 +74,19 @@ def shap_waterfall_plot(explainer, X_instance: np.ndarray,
     # Inject readable feature names into the Explanation object
     sv.feature_names = labels
 
+    n_features = len(sv.values)
     fig, ax = plt.subplots(figsize=(10, 6))
-    shap.plots.waterfall(sv, max_display=13, show=False)
+    shap.plots.waterfall(sv, max_display=min(13, n_features), show=False)
     plt.title(f"Why the Model Decided: {passenger_label}", fontsize=13, pad=12)
+    fig.patch.set_alpha(0)
+    for _ax in fig.axes:
+        _ax.set_facecolor("none")
     plt.tight_layout()
 
     if save:
         safe_label = passenger_label.replace(" ", "_").lower()
         path = IMG_DIR / f"shap_waterfall_{safe_label}.png"
-        plt.savefig(path, dpi=150, bbox_inches='tight')
+        plt.savefig(path, dpi=150, bbox_inches='tight', transparent=True)
         print(f"Saved: {path}")
 
     return fig
